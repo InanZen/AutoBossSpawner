@@ -30,7 +30,7 @@ namespace PluginTest
         }
         public override Version Version
         {
-            get { return new Version("1.0"); }
+            get { return new Version("1.0.1"); }
         }
         public override void Initialize()
         {
@@ -111,7 +111,7 @@ namespace PluginTest
             int arenaY = arenaregion.Area.Y + (arenaregion.Area.Height / 2);
             string broadcastString = "";
             Random r = new Random();
-            switch (r.Next(1, 7))
+            switch (r.Next(1, 9))
             {
                 case (1):
                     npc = TShockAPI.TShock.Utils.GetNPCById(134);     //destroyer                   
@@ -127,6 +127,8 @@ namespace PluginTest
                     break;
                 case (3):
                     npc = TShockAPI.TShock.Utils.GetNPCById(125); //twins
+                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
+                    npc = TShockAPI.TShock.Utils.GetNPCById(126); //twins
                     TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
                     npc = TShockAPI.TShock.Utils.GetNPCById(50);     //king             
                     TSPlayer.Server.SpawnNPC(npc.type, npc.name, 5, arenaX, arenaY, 30, 30);
@@ -155,6 +157,8 @@ namespace PluginTest
                     break;
                 case (7):
                     npc = TShockAPI.TShock.Utils.GetNPCById(125); //twins
+                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
+                    npc = TShockAPI.TShock.Utils.GetNPCById(126); //twins
                     TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
                     npc = TShockAPI.TShock.Utils.GetNPCById(70);     //spikes              
                     TSPlayer.Server.SpawnNPC(npc.type, npc.name, 5, arenaX, arenaY, 50, 50);
