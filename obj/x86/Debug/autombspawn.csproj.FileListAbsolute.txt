@@ -1,0 +1,12 @@
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\Community.CsharpSqlite.dll
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\Community.CsharpSqlite.SQLiteClient.dll
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\Newtonsoft.Json.dll
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\TerrariaServer.exe
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\TShockAPI.dll
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\MySql.Data.dll
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\TShockAPI.pdb
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\obj\x86\Debug\AutoBossSpawner.dll
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\obj\x86\Debug\AutoBossSpawner.pdb
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\AutoBossSpawner.dll
+C:\Users\Peter\Documents\Visual Studio 2010\Projects\automobspawn\AutoBossSpawner.pdb

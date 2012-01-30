@@ -1,0 +1,14 @@
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\obj\x86\Debug\PluginTest.dll
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\obj\x86\Debug\PluginTest.pdb
+C:\Users\Peter\Documents\ServerPlugins\PluginTest.dll
+C:\Users\Peter\Documents\ServerPlugins\PluginTest.pdb
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\PluginTest.dll
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\PluginTest.pdb
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\Community.CsharpSqlite.dll
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\Community.CsharpSqlite.SQLiteClient.dll
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\Newtonsoft.Json.dll
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\TerrariaServer.exe
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\TShockAPI.dll
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\MySql.Data.dll
+C:\Users\Peter\Documents\C#\TShockPluginTemplate\TShockAPI.pdb
