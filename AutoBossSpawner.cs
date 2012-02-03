@@ -1,20 +1,25 @@
 ﻿using Terraria;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using Hooks;
 using TShockAPI;
 
-namespace PluginTest
+namespace AutoBossSpawner
 {
     [APIVersion(1, 11)]
     public class AutoBossSpawner : TerrariaPlugin
     {
         private DateTime LastCheck = DateTime.UtcNow;
         private DateTime OtherLastCheck = DateTime.UtcNow;
+        public ABSconfig configObj { get; set; }
+        internal static string ABSconfigPath { get { return Path.Combine(TShock.SavePath, "ABSconfig.json"); } }
+        private TShockAPI.DB.Region arenaregion = new TShockAPI.DB.Region();
         private int BossTimer = 30;
         private List<Terraria.NPC> bossList = new List<Terraria.NPC>();
-        private int[] henchmenArray = new int[] { 2, 6, 16, 24, 28, 29, 31, 32, 34, 42, 44, 45, 48, 59, 60, 62, 71, 75, 77, 78, 81, 82, 83, 84, 85, 86, 93, 104, 110, 111, 120, 121, 122, 137, 138, 140, 141, 143, 144, 145 };
-        private bool BossToggle = true;
+        private bool BossToggle = false;
+        Random rndGen = new Random();
+
 
         public override string Name
         {
@@ -30,7 +35,7 @@ namespace PluginTest
         }
         public override Version Version
         {
-            get { return new Version("1.0.1"); }
+            get { return new Version("1.2"); }
         }
         public override void Initialize()
         {
@@ -48,29 +53,26 @@ namespace PluginTest
         }
         public AutoBossSpawner(Main game) : base(game)
         {
-
+            Order = 1;
         }
-
         public void OnUpdate()
         {
             if (BossToggle && ((DateTime.UtcNow - LastCheck).TotalSeconds >= 1))
             {
                 LastCheck = DateTime.UtcNow;
-                double thetime = Main.time;
-                string daynight = (Main.dayTime)?"day":"night";
-                if (!Main.dayTime && BossTimer<60)
+                if (!Main.dayTime && BossTimer<601)
                 {
-                    if (BossTimer == 30) 
+                    if (BossTimer == configObj.BossTimer) 
                     {
-                        TShockAPI.TShock.Utils.Broadcast("ATTENTION: Boss battle starting in 30 seconds (/warp arena)", Color.Aquamarine);
+                        if (configObj.BossText.Length > 1) { TShockAPI.TShock.Utils.Broadcast(configObj.BossText, Color.Aquamarine); }
                     }
                     else if (BossTimer == 10) 
                     {
-                        TShockAPI.TShock.Utils.Broadcast("ATTENTION: Boss battle starting in 10 seconds! (/warp arena)", Color.Aquamarine);
+                        if (configObj.BossText10s.Length > 1) { TShockAPI.TShock.Utils.Broadcast(configObj.BossText10s, Color.Aquamarine); }
                     }
                     else if (BossTimer == 0)
                     {
-                        TShockAPI.TShock.Utils.Broadcast("Boss battle in Arena has begun! (/warp arena)", Color.Aquamarine);
+                        if (configObj.BossText0s.Length > 1) { TShockAPI.TShock.Utils.Broadcast(configObj.BossText0s, Color.Aquamarine); }
                         startBossBattle();                        
                     }
                     else if ((BossTimer < 0) && (BossTimer % 20 == 0))
@@ -80,14 +82,14 @@ namespace PluginTest
                         {
                             if (bossList[i].active) bossActive = true;
                         }
-                        if (bossActive) spawnHenchmen();
+                        if (bossActive) spawnMinions();
                         else
                         {
-                            TShockAPI.TShock.Utils.Broadcast("All Bosses have been defeated. That's it for tonight.",Color.Aquamarine);
-                            BossTimer = 100;
+                            if (configObj.BossDefeat.Length > 1) { TShockAPI.TShock.Utils.Broadcast(configObj.BossDefeat, Color.Aquamarine); }
+                            BossTimer = 601;
                             for (int i = 0; i < Main.npc.Length; i++)
                             {
-                                if (Main.npc[i].active && Main.npc[i].type == 70)
+                                if (Main.npc[i].active && (Main.npc[i].type == 70 || Main.npc[i].type == 72))
                                 {                    
                                     TSPlayer.Server.StrikeNPC(i, 9999, 90f, 1);
                                 }
@@ -96,9 +98,9 @@ namespace PluginTest
                     }
                     BossTimer--;                   
                 }
-                else if (BossTimer != 30 && Main.dayTime)
+                else if (BossTimer != configObj.BossTimer && Main.dayTime)
                 {
-                    BossTimer = 30;
+                    BossTimer = configObj.BossTimer;
                 }
             }
         }
@@ -106,107 +108,94 @@ namespace PluginTest
         private void startBossBattle()
         {
             NPC npc = new NPC();
-            TShockAPI.DB.Region arenaregion = TShock.Regions.GetRegionByName("arena");
+            arenaregion = TShock.Regions.GetRegionByName("arena");
             int arenaX = arenaregion.Area.X + (arenaregion.Area.Width / 2);
             int arenaY = arenaregion.Area.Y + (arenaregion.Area.Height / 2);
-            string broadcastString = "";
-            Random r = new Random();
-            switch (r.Next(1, 9))
+            string broadcastString = "Boss selected:";
+            BossSet bossSet = configObj.BossList[rndGen.Next(0, configObj.BossList.Count)];
+            foreach (BossObj b in bossSet.bosses)
             {
-                case (1):
-                    npc = TShockAPI.TShock.Utils.GetNPCById(134);     //destroyer                   
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
-                    npc = TShockAPI.TShock.Utils.GetNPCById(4);  //eye
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 3, arenaX, arenaY, 50, 50);
-                    broadcastString = "Boss selected: Destroyer + 3x Eye of Chutuhlu!";
-                    break;                    
-                case (2):
-                    npc = TShockAPI.TShock.Utils.GetNPCById(134);     //destroyer                   
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 2, arenaX, arenaY, 30, 30);
-                    broadcastString = "Boss selected: 2x Destroyer!";
-                    break;
-                case (3):
-                    npc = TShockAPI.TShock.Utils.GetNPCById(125); //twins
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
-                    npc = TShockAPI.TShock.Utils.GetNPCById(126); //twins
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
-                    npc = TShockAPI.TShock.Utils.GetNPCById(50);     //king             
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 5, arenaX, arenaY, 30, 30);
-                    broadcastString = "Boss selected: The Twins + 5x King Slime!";
-                    break;
-                case (4):
-                    npc = TShockAPI.TShock.Utils.GetNPCById(127); //prime
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
-                    npc = TShockAPI.TShock.Utils.GetNPCById(70);     //spikes                   
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 5, arenaX, arenaY, 50, 50);
-                    broadcastString = "Boss selected: Skeletron Prime + 5x Spike Ball!";
-                    break;
-                case (5):                    
-                    npc = TShockAPI.TShock.Utils.GetNPCById(127); //prime
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
-                    npc = TShockAPI.TShock.Utils.GetNPCById(134);     //destroyer                   
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
-                    broadcastString = "Boss selected: Skeletron Prime + Destroyer!";
-                    break;
-                case (6):
-                    npc = TShockAPI.TShock.Utils.GetNPCById(134); //destroyer
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
-                    npc = TShockAPI.TShock.Utils.GetNPCById(70);     //spikes              
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 7, arenaX, arenaY, 50, 50);
-                    broadcastString = "Boss selected: Destroyer + 7x Spike Ball!";
-                    break;
-                case (7):
-                    npc = TShockAPI.TShock.Utils.GetNPCById(125); //twins
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
-                    npc = TShockAPI.TShock.Utils.GetNPCById(126); //twins
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 1, arenaX, arenaY, 20, 20);
-                    npc = TShockAPI.TShock.Utils.GetNPCById(70);     //spikes              
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 5, arenaX, arenaY, 50, 50);
-                    broadcastString = "Boss selected: The Twins + 5x Spike Ball!";
-                    break;
-                case (8):
-                    npc = TShockAPI.TShock.Utils.GetNPCById(87); //wyvern
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, 5, arenaX, arenaY, 50, 50);
-                    broadcastString = "Boss selected: 5x Wyvern!";
-                    break;
-                default:
-                    broadcastString = "Stars say: No boss tonight."; 
-                    break;
+                npc = TShockAPI.TShock.Utils.GetNPCById(b.id);
+                TSPlayer.Server.SpawnNPC(npc.type, npc.name, b.amt, arenaX, arenaY, 30, 30);
+                broadcastString += " " + b.amt + "x " + npc.name + " +";
             }
+            broadcastString = broadcastString.Remove(broadcastString.Length - 2);
             TShockAPI.TShock.Utils.Broadcast(broadcastString, Color.Aquamarine);
-
             for (int i = 0; i < Main.npc.Length; i++)
             {
                 if (Main.npc[i].boss) bossList.Add(Main.npc[i]);
             }
         }
-        private void spawnHenchmen()
+        private void spawnMinions()
         {
             //TODO: num of henchmen based on players in arena, spawn life when boss is at half health.
-            NPC npc = new NPC();         
-            Random r = new Random();
-            npc = TShockAPI.TShock.Utils.GetNPCById(henchmenArray[r.Next(0,henchmenArray.Length)]);
-            TShockAPI.DB.Region arenaregion = TShock.Regions.GetRegionByName("arena");
+            NPC npc = new NPC();
+            npc = TShockAPI.TShock.Utils.GetNPCById(configObj.MinionsList[rndGen.Next(0, configObj.MinionsList.Length)]);
+            arenaregion = TShock.Regions.GetRegionByName("arena");
             int arenaX = arenaregion.Area.X + (arenaregion.Area.Width / 2);
             int arenaY = arenaregion.Area.Y + (arenaregion.Area.Height / 2);
-            int henchmenNumber = r.Next(10,31);
-            TSPlayer.Server.SpawnNPC(npc.type, npc.name, henchmenNumber , arenaX, arenaY, 50, 50);
-            TShockAPI.TShock.Utils.Broadcast("Spawning Boss Henchmen: " + henchmenNumber + "x " + npc.name + "!", Color.SteelBlue);
+            int henchmenNumber = rndGen.Next(configObj.MinionsMinMax[0], configObj.MinionsMinMax[1] + 1);
+            TSPlayer.Server.SpawnNPC(npc.type, npc.name, henchmenNumber, arenaX, arenaY, 30, 30);
+            if (configObj.MinionsAnnounce) { TShockAPI.TShock.Utils.Broadcast("Spawning Boss Minions: " + henchmenNumber + "x " + npc.name + "!", Color.SteelBlue); }
         }
         
         #region Commands
         public void OnInitialize()
         {
-            Commands.ChatCommands.Add(new Command("autoboss", toggleautoboss, "togglearena"));
+            configObj = new ABSconfig();
+            SetupConfig();
+            Commands.ChatCommands.Add(new Command("autoboss", ABStoggle, "abstoggle"));
+            Commands.ChatCommands.Add(new Command("autoboss", ABSreload, "absreload"));
+            //Commands.ChatCommands.Add(new Command("autoboss", ABSdebug, "absdebug"));
         }
 
-        public void toggleautoboss(CommandArgs args)
+        public void ABStoggle(CommandArgs args)
         {
             BossToggle = !BossToggle;
+            if (BossToggle == true)
+            {
+                foreach (TShockAPI.DB.Region reg in TShock.Regions.ListAllRegions(Main.worldID.ToString()))
+                {
+                    if (reg.Name == "arena") { arenaregion = reg; }
+                }
+                if (arenaregion.Name != "arena") { TShockAPI.TShock.Utils.Broadcast("Error: Region 'arena' is not defined.", Color.Red); BossToggle = false; }
+            }            
             args.Player.SendMessage("Boss battles now: "+ ((BossToggle)?"Enabled":"Disabled"));
-            BossTimer = 30;
+            BossTimer = configObj.BossTimer;
         }
+        public void ABSreload(CommandArgs args)
+        {
+            SetupConfig();
+            args.Player.SendMessage("AutoBossSpawner config reloaded.");
+        }
+      /*  public void ABSdebug(CommandArgs args)
+        {
+            args.Player.SendMessage("arena x: " + arenaregion.Area.X);
+            
+        }*/
         
         #endregion
+        public void SetupConfig()
+        {
+            try
+            {
+                if (File.Exists(ABSconfigPath))
+                {
+                    configObj = new ABSconfig();
+                    configObj = ABSconfig.Read(ABSconfigPath);
+                    BossTimer = configObj.BossTimer;
+                }
+                else { configObj.Write(ABSconfigPath); }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Error in config file");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Log.Error("Config Exception");
+                Log.Error(ex.ToString());
+            }
+        }
     }
+       
 }
